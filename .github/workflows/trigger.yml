@@ -9,7 +9,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger endpoint
-        run: |
-          curl -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://https://k-voter-saas.vercel.app/api/cron/vote
+        run: curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "https://k-voter-saas.vercel.app/api/cron/vote"
+
