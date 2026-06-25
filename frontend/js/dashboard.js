@@ -77,17 +77,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!statusRes.ok) throw new Error('Failed to retrieve user status');
       const statusData = await statusRes.json();
 
-      // 2. Render Subscription Status
+      // 2. Render Approval Status
       const subStatus = statusData.subscription_status || 'inactive';
-      const isSubbed = subStatus === 'active' || subStatus === 'trialing';
+      const isApproved = subStatus === 'active';
       
-      subStatusText.textContent = subStatus.toUpperCase();
-      if (isSubbed) {
+      subStatusText.textContent = isApproved ? 'APPROVED' : 'PENDING APPROVAL';
+      if (isApproved) {
         subDot.className = 'pulse-dot active';
-        pricingInfoText.textContent = 'Your premium subscription is active. Enjoy automatic daily voting!';
+        pricingInfoText.textContent = 'Your account is approved! Automated voting runs every 6 hours.';
       } else {
         subDot.className = 'pulse-dot inactive';
-        pricingInfoText.textContent = 'Your subscription is currently inactive. Activate your plan below to enable automated voting.';
+        pricingInfoText.textContent = 'Your account is pending approval. Automated voting is currently disabled. Contact admin to activate.';
       }
 
       // 3. Render Token Status Badge
@@ -127,8 +127,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         lastVoteResultBadge.className = 'badge badge-info';
       }
 
-      // 6. Load Payment Action Buttons
-      renderBillingControls(isSubbed);
+      // 6. Load Account Status Buttons/Info
+      renderAccountStatusControls(isApproved);
+
+      // Check Admin status and load admin panel if applicable
+      await checkAndLoadAdminPanel(token);
 
       // 7. Load Logs Table
       await loadLogsTable(token);
@@ -140,53 +143,210 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   /**
-   * Render Buy Me a Coffee checkout or portal controls
+   * Render Account Activation / Status Info in Sidebar
    */
-  function renderBillingControls(isSubbed) {
+  function renderAccountStatusControls(isApproved) {
     stripeActionContainer.innerHTML = '';
     stripeCardContainer.innerHTML = '';
 
-    if (isSubbed) {
-      // Show portal link in header
-      const portalBtn = document.createElement('button');
-      portalBtn.className = 'btn btn-secondary';
-      portalBtn.textContent = 'Manage Subscription';
-      portalBtn.addEventListener('click', redirectToBillingPortal);
-      stripeActionContainer.appendChild(portalBtn);
+    const statusBadge = document.createElement('div');
+    statusBadge.style.width = '100%';
+    statusBadge.style.textAlign = 'center';
+    statusBadge.style.padding = '12px';
+    statusBadge.style.borderRadius = '12px';
+    statusBadge.style.fontWeight = '600';
+    statusBadge.style.fontSize = '0.95rem';
 
-      const portalCardBtn = document.createElement('button');
-      portalCardBtn.className = 'btn btn-secondary';
-      portalCardBtn.style.width = '100%';
-      portalCardBtn.textContent = 'Billing Settings';
-      portalCardBtn.addEventListener('click', redirectToBillingPortal);
-      stripeCardContainer.appendChild(portalCardBtn);
+    if (isApproved) {
+      statusBadge.style.backgroundColor = 'rgba(16, 185, 129, 0.12)';
+      statusBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      statusBadge.style.color = 'var(--success)';
+      statusBadge.textContent = '✓ Automated Voting Active';
     } else {
-      // Show checkout link in right panel
-      const checkoutBtn = document.createElement('button');
-      checkoutBtn.className = 'btn btn-accent';
-      checkoutBtn.style.width = '100%';
-      checkoutBtn.textContent = 'Subscribe Now (Buy Me a Coffee)';
-      checkoutBtn.addEventListener('click', redirectToCheckout);
-      stripeCardContainer.appendChild(checkoutBtn);
+      statusBadge.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
+      statusBadge.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+      statusBadge.style.color = 'var(--warning)';
+      statusBadge.textContent = '⚠ Pending Admin Activation';
+    }
+    stripeCardContainer.appendChild(statusBadge);
+  }
+
+  /**
+   * Check if current user is admin, and render panel
+   */
+  async function checkAndLoadAdminPanel(token) {
+    const adminPanel = document.getElementById('admin-panel');
+    if (!adminPanel) return;
+
+    try {
+      const res = await fetch('/api/admin/status', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!res.ok) {
+        // Not an admin, hide panel
+        adminPanel.style.display = 'none';
+        return;
+      }
+
+      const data = await res.json();
+      if (data.success && data.is_admin) {
+        adminPanel.style.display = 'block';
+        await loadAdminUsers(token);
+        
+        // Bind manual cron trigger button
+        const triggerCronBtn = document.getElementById('trigger-cron-btn');
+        if (triggerCronBtn && !triggerCronBtn.dataset.bound) {
+          triggerCronBtn.dataset.bound = 'true';
+          triggerCronBtn.addEventListener('click', async () => {
+            try {
+              triggerCronBtn.disabled = true;
+              triggerCronBtn.textContent = 'Executing Cron...';
+              showToast('Manually triggering vote cron job...', 'info');
+
+              const triggerRes = await fetch('/api/admin/trigger-cron', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+
+              const triggerData = await triggerRes.json();
+              triggerCronBtn.disabled = false;
+              triggerCronBtn.textContent = 'Trigger Vote Cron Now';
+
+              if (triggerRes.ok && triggerData.success) {
+                const s = triggerData.results;
+                showToast(`Cron completed: Success ${s.success}, Already Voted ${s.already_voted}, Captcha ${s.captcha}, Errors ${s.error}`, 'success');
+                await loadDashboardData(); // Reload UI logs and data
+              } else {
+                throw new Error(triggerData.error || 'Failed to execute cron');
+              }
+            } catch (err) {
+              triggerCronBtn.disabled = false;
+              triggerCronBtn.textContent = 'Trigger Vote Cron Now';
+              showToast(err.message, 'error');
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Admin check skipped or failed:', e);
+      adminPanel.style.display = 'none';
     }
   }
 
-  function redirectToCheckout() {
-    if (!appConfig?.bmcMembershipUrl) {
-      showToast('Buy Me a Coffee membership link is not configured.', 'error');
-      return;
-    }
-    
-    showToast('Redirecting to Buy Me a Coffee membership page...', 'info');
-    // Open BMC membership page in a new window or current tab
-    window.location.href = appConfig.bmcMembershipUrl;
-  }
+  /**
+   * Fetch and display user list for admin
+   */
+  async function loadAdminUsers(token) {
+    const tableBody = document.getElementById('admin-users-table-body');
+    if (!tableBody) return;
 
-  function redirectToBillingPortal() {
-    showToast('To cancel or update payment details, please manage it from your Buy Me a Coffee supporter dashboard.', 'info');
-    setTimeout(() => {
-      window.location.href = 'https://www.buymeacoffee.com';
-    }, 2500);
+    try {
+      const res = await fetch('/api/admin/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Failed to retrieve registered users');
+      const { users } = await res.json();
+
+      tableBody.innerHTML = '';
+
+      if (!users || users.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted);">No registered users found.</td>
+          </tr>`;
+        return;
+      }
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        // User (Username)
+        const nameCell = document.createElement('td');
+        nameCell.style.fontWeight = '500';
+        nameCell.textContent = user.discord_username;
+        row.appendChild(nameCell);
+
+        // Email
+        const emailCell = document.createElement('td');
+        emailCell.textContent = user.email || 'N/A';
+        row.appendChild(emailCell);
+
+        // Status Badge
+        const statusCell = document.createElement('td');
+        const badge = document.createElement('span');
+        const isApproved = user.subscription_status === 'active';
+        badge.textContent = isApproved ? 'APPROVED' : 'INACTIVE';
+        badge.className = isApproved ? 'badge badge-success' : 'badge badge-danger';
+        statusCell.appendChild(badge);
+        row.appendChild(statusCell);
+
+        // Last Vote Time
+        const lastVoteCell = document.createElement('td');
+        lastVoteCell.textContent = user.last_vote_at ? new Date(user.last_vote_at).toLocaleString() : 'Never';
+        row.appendChild(lastVoteCell);
+
+        // Last Vote Result
+        const resultCell = document.createElement('td');
+        const resBadge = document.createElement('span');
+        const r = user.last_vote_result;
+        if (r) {
+          resBadge.textContent = r.replace('_', ' ').toUpperCase();
+          if (r === 'success') resBadge.className = 'badge badge-success';
+          else if (r === 'already_voted') resBadge.className = 'badge badge-info';
+          else if (r === 'captcha') resBadge.className = 'badge badge-warning';
+          else resBadge.className = 'badge badge-danger';
+        } else {
+          resBadge.textContent = 'N/A';
+          resBadge.className = 'badge badge-info';
+        }
+        resultCell.appendChild(resBadge);
+        row.appendChild(resultCell);
+
+        // Action Button
+        const actionCell = document.createElement('td');
+        actionCell.style.textAlign = 'right';
+        const actionBtn = document.createElement('button');
+        actionBtn.className = isApproved ? 'btn btn-secondary' : 'btn btn-primary';
+        actionBtn.style.padding = '0.4rem 0.8rem';
+        actionBtn.style.fontSize = '0.8rem';
+        actionBtn.textContent = isApproved ? 'Suspend' : 'Approve';
+        
+        actionBtn.addEventListener('click', async () => {
+          try {
+            actionBtn.disabled = true;
+            const toggleRes = await fetch(`/api/admin/users/${user.id}/toggle-approval`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const toggleData = await toggleRes.json();
+            
+            if (toggleRes.ok && toggleData.success) {
+              showToast(`Status updated successfully!`, 'success');
+              await loadDashboardData(); // Refresh everything
+            } else {
+              throw new Error(toggleData.error || 'Failed to update user status');
+            }
+          } catch (err) {
+            actionBtn.disabled = false;
+            showToast(err.message, 'error');
+          }
+        });
+
+        actionCell.appendChild(actionBtn);
+        row.appendChild(actionCell);
+
+        tableBody.appendChild(row);
+      });
+
+    } catch (e) {
+      console.error('[ADMIN] Load user list error:', e);
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--error);">Error loading registered users list.</td>
+        </tr>`;
+    }
   }
 
   /**

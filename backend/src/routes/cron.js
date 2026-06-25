@@ -1,21 +1,21 @@
 import express from 'express';
 import { requireCronAuth } from '../middleware/cronAuth.js';
 import { decrypt } from '../services/encryption.js';
-import { checkVoteStatus, castVote } from '../services/voter.js';
+import { checkVoteStatus, castVote, castVotePlaywright } from '../services/voter.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
 const router = express.Router();
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * GET /api/cron/vote
- * Runs every 6 hours to automatically cast votes for all active paid subscribers
+ * Core cron runner executing votes for all active (approved) users.
+ * Supports a 3-strike API retry followed by a Playwright browser fallback.
  */
-router.get('/vote', requireCronAuth, async (req, res) => {
+export async function executeVoteCron() {
   console.log('[CRON] Starting automated vote execution...');
   
   try {
-    // 1. Fetch all active subscribers who have configured a token
+    // 1. Fetch all active users who have configured a token
     const { data: users, error } = await supabaseAdmin
       .from('users')
       .select('id, discord_username, encrypted_token, token_iv, token_tag')
@@ -26,7 +26,7 @@ router.get('/vote', requireCronAuth, async (req, res) => {
       throw new Error(`Database error fetching active users: ${error.message}`);
     }
 
-    console.log(`[CRON] Found ${users.length} active subscribers to process.`);
+    console.log(`[CRON] Found ${users.length} active users to process.`);
 
     const results = {
       total: users.length,
@@ -80,11 +80,48 @@ router.get('/vote', requireCronAuth, async (req, res) => {
           // c. Eligible to vote, proceed to cast
           console.log(`[CRON] User ${user.discord_username} is eligible. Casting vote...`);
           
-          // Wait 200ms before casting to split the check and cast
-          await delay(200);
-          const voteResult = await castVote(token);
+          let voteResult = null;
+          let apiAttempts = 0;
+          const maxApiAttempts = 3;
 
-          console.log(`[CRON] Vote cast result for ${user.discord_username}: ${voteResult.status} - ${voteResult.detail}`);
+          while (apiAttempts < maxApiAttempts) {
+            apiAttempts++;
+            console.log(`[CRON] Attempt ${apiAttempts} using API method for ${user.discord_username}...`);
+            
+            // Wait 200ms before casting to split the check and cast
+            await delay(200);
+            voteResult = await castVote(token);
+            
+            if (voteResult.status === 'success' || voteResult.status === 'already_voted') {
+              break;
+            }
+            if (voteResult.status === 'captcha') {
+              console.log(`[CRON] Captcha required. Skipping further API retries.`);
+              break;
+            }
+            
+            // Wait 1s before retrying
+            if (apiAttempts < maxApiAttempts) {
+              console.log(`[CRON] API Attempt ${apiAttempts} failed: ${voteResult.detail}. Retrying in 1s...`);
+              await delay(1000);
+            }
+          }
+
+          // Fallback to Playwright if API failed 3 times
+          if (voteResult && voteResult.status === 'error') {
+            console.log(`[CRON] API method failed 3 times for ${user.discord_username}. Falling back to Playwright browser method...`);
+            try {
+              voteResult = await castVotePlaywright(token);
+            } catch (pwError) {
+              console.error(`[CRON] Playwright fallback failed for ${user.discord_username}:`, pwError.message);
+              voteResult = {
+                status: 'error',
+                detail: `API failed 3 times. Playwright fallback error: ${pwError.message}`
+              };
+            }
+          }
+
+          console.log(`[CRON] Final vote cast result for ${user.discord_username}: ${voteResult.status} - ${voteResult.detail}`);
 
           // Update user last vote info
           await supabaseAdmin
@@ -138,14 +175,27 @@ router.get('/vote', requireCronAuth, async (req, res) => {
     }
 
     console.log('[CRON] Automated vote execution complete. Results:', results);
+    return results;
+
+  } catch (err) {
+    console.error('[CRON] Fatal cron error:', err.message);
+    throw err;
+  }
+}
+
+/**
+ * GET /api/cron/vote
+ * Endpoint triggered by external/vercel cron services
+ */
+router.get('/vote', requireCronAuth, async (req, res) => {
+  try {
+    const results = await executeVoteCron();
     res.json({
       success: true,
       message: 'Cron job executed successfully',
       results
     });
-
   } catch (err) {
-    console.error('[CRON] Fatal cron error:', err.message);
     res.status(500).json({
       success: false,
       error: err.message

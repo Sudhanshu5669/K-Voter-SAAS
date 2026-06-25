@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { chromium } from 'playwright-chromium';
 
 const GRAPHQL_URL = 'https://api.top.gg/graphql';
 const ENTITY_ID = '4283790394010009600'; // Karuta's Top.gg entity ID
@@ -135,5 +136,256 @@ export async function castVote(sessionToken) {
       status: 'error',
       detail: err.message
     };
+  }
+}
+
+/**
+ * Cast a vote on behalf of a user using browser automation (Playwright)
+ * Translated from the user's robust Python implementation.
+ * @param {string} sessionToken - Decrypted top.gg session token
+ * @returns {Promise<object>} { status: 'success' | 'already_voted' | 'captcha' | 'error', detail: string }
+ */
+export async function castVotePlaywright(sessionToken) {
+  let browser = null;
+  try {
+    console.log('[VOTER-PLAYWRIGHT] Launching browser...');
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+    });
+
+    // Inject session cookies for both top.gg and .top.gg
+    await context.addCookies([
+      {
+        name: '__Secure-authjs.session-token',
+        value: sessionToken,
+        domain: 'top.gg',
+        path: '/',
+        secure: true,
+        httpOnly: true,
+        sameSite: 'Lax'
+      },
+      {
+        name: '__Secure-authjs.session-token',
+        value: sessionToken,
+        domain: '.top.gg',
+        path: '/',
+        secure: true,
+        httpOnly: true,
+        sameSite: 'Lax'
+      }
+    ]);
+
+    const page = await context.newPage();
+
+    // Intercept GraphQL vote responses
+    let voteResult = null;
+    page.on('response', async (response) => {
+      if (response.url().includes('api.top.gg/graphql')) {
+        try {
+          const body = await response.json();
+          const ve = body?.data?.voteEntity;
+          if (ve) {
+            voteResult = { ...voteResult, ...ve };
+          }
+        } catch (e) {
+          // ignore parsing/response reading errors
+        }
+      }
+    });
+
+    console.log('[VOTER-PLAYWRIGHT] Loading https://top.gg/bot/646937666251915264/vote ...');
+    try {
+      await page.goto('https://top.gg/bot/646937666251915264/vote', {
+        timeout: 40000,
+        waitUntil: 'networkidle'
+      });
+    } catch (err) {
+      console.warn('[VOTER-PLAYWRIGHT] Timed out waiting for network idle. Proceeding with DOM elements...');
+    }
+
+    // Let the page hydrate/stabilize for 3 seconds
+    await page.waitForTimeout(3000);
+
+    console.log('[VOTER-PLAYWRIGHT] Waiting for page auth hydration...');
+    try {
+      await page.waitForSelector('#__next, body', { timeout: 20000 });
+    } catch (err) {
+      console.warn('[VOTER-PLAYWRIGHT] Page elements did not stabilize, scanning DOM directly...');
+    }
+
+    const selectors = [
+      "button:has-text('Vote')",
+      "[data-testid='vote-button']",
+      "button:has-text('vote')",
+      "a:has-text('Vote')"
+    ];
+
+    let voteBtn = null;
+    const maxWaitSeconds = 45;
+    const startTime = Date.now();
+    let lastLoggedCountdown = null;
+
+    while ((Date.now() - startTime) < maxWaitSeconds * 1000) {
+      const currentText = await page.innerText('body');
+      const currentTextLower = currentText.toLowerCase();
+
+      // 1. Check if session expired / not logged in
+      if (currentTextLower.includes('login to vote') || currentTextLower.includes('sign in to vote')) {
+        console.error('[VOTER-PLAYWRIGHT] Not logged in — Top.gg rejected session cookie.');
+        return {
+          status: 'error',
+          detail: 'Login failed: session cookie rejected by top.gg'
+        };
+      }
+
+      // 2. Check if we already voted
+      if (currentTextLower.includes('already voted') || currentTextLower.includes('vote again in') || currentTextLower.includes('next vote')) {
+        console.log('[VOTER-PLAYWRIGHT] User already voted.');
+        return {
+          status: 'already_voted',
+          detail: 'Already voted within the last 12 hours (detected via text)'
+        };
+      }
+
+      // 3. Check and log ad countdown
+      if (currentTextLower.includes('you will be able to vote after this ad')) {
+        const lines = currentText.split('\n');
+        let countdownVal = null;
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toLowerCase().includes('you will be able to vote after this ad')) {
+            if (i + 1 < lines.length) {
+              const nextLine = lines[i + 1].trim();
+              if (/^\d+$/.test(nextLine)) {
+                countdownVal = parseInt(nextLine, 10);
+                break;
+              }
+            }
+          }
+        }
+
+        if (countdownVal !== null) {
+          if (countdownVal !== lastLoggedCountdown) {
+            console.log(`[VOTER-PLAYWRIGHT] Ad active. Waiting for ad to finish (${countdownVal}s remaining)...`);
+            lastLoggedCountdown = countdownVal;
+          }
+        } else {
+          if (lastLoggedCountdown === null) {
+            console.log('[VOTER-PLAYWRIGHT] Ad active. Waiting for ad to finish...');
+            lastLoggedCountdown = -1;
+          }
+        }
+      }
+
+      // 4. Search for visible and active vote button
+      for (const sel of selectors) {
+        const loc = page.locator(sel).first();
+        if (await loc.count() > 0 && await loc.isVisible()) {
+          const isDisabled = await loc.isDisabled();
+          if (!isDisabled) {
+            voteBtn = loc;
+            break;
+          } else {
+            console.log(`[VOTER-PLAYWRIGHT] Vote button found via '${sel}' but it is currently disabled...`);
+          }
+        }
+      }
+
+      if (voteBtn !== null) {
+        break;
+      }
+
+      await page.waitForTimeout(2000);
+    }
+
+    if (voteBtn === null) {
+      console.error('[VOTER-PLAYWRIGHT] Could not find the Vote button.');
+      return {
+        status: 'error',
+        detail: 'Could not find the Vote button on top.gg'
+      };
+    }
+
+    console.log('[VOTER-PLAYWRIGHT] Clicking Vote button...');
+    await voteBtn.click();
+
+    console.log('[VOTER-PLAYWRIGHT] Waiting for vote processing...');
+    await page.waitForTimeout(8000);
+
+    if (voteResult) {
+      const error = voteResult.error || 'NONE';
+      const ack = voteResult.isAcknowledged || false;
+      const newCount = voteResult.newVoteCount || '?';
+      const captcha = voteResult.captchaProvider;
+
+      if (captcha) {
+        console.error(`[VOTER-PLAYWRIGHT] Captcha triggered (${captcha}).`);
+        return {
+          status: 'captcha',
+          detail: `Captcha required (${captcha})`
+        };
+      }
+
+      if (error && error !== 'NONE') {
+        if (error === 'USER_ALREADY_VOTED' || error.toLowerCase().includes('already')) {
+          console.log('[VOTER-PLAYWRIGHT] Already voted (GraphQL error).');
+          return {
+            status: 'already_voted',
+            detail: 'Already voted within the last 12 hours'
+          };
+        }
+        console.error(`[VOTER-PLAYWRIGHT] Vote failed with GraphQL error: ${error}`);
+        return {
+          status: 'error',
+          detail: `Vote failed with GraphQL error: ${error}`
+        };
+      }
+
+      if (ack) {
+        console.log(`[VOTER-PLAYWRIGHT] Success! Total Karuta votes: ${newCount}`);
+        return {
+          status: 'success',
+          newVoteCount: newCount,
+          detail: `Voted successfully via Playwright (total votes: ${newCount})`
+        };
+      } else {
+        console.warn('[VOTER-PLAYWRIGHT] Vote response not acknowledged:', voteResult);
+        return {
+          status: 'success',
+          detail: 'Voted but response not acknowledged'
+        };
+      }
+    } else {
+      const updatedText = await page.innerText('body');
+      const updatedTextLower = updatedText.toLowerCase();
+      if (updatedTextLower.includes('already voted') || updatedTextLower.includes('vote again')) {
+        console.log('[VOTER-PLAYWRIGHT] Success (detected already voted/vote again in body).');
+        return {
+          status: 'success',
+          detail: 'Voted successfully via Playwright'
+        };
+      } else if (updatedTextLower.includes('success') || updatedTextLower.includes('thank')) {
+        console.log('[VOTER-PLAYWRIGHT] Success (success text in body).');
+        return {
+          status: 'success',
+          detail: 'Voted successfully via Playwright'
+        };
+      } else {
+        console.warn('[VOTER-PLAYWRIGHT] Voted but could not confirm result.');
+        return {
+          status: 'success',
+          detail: 'Voted via Playwright (unconfirmed)'
+        };
+      }
+    }
+
+  } catch (err) {
+    console.error('[VOTER-PLAYWRIGHT] Browser flow failed:', err.message);
+    throw err;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }

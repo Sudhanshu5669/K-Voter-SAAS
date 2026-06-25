@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import bmcRoutes from './routes/buymeacoffee.js';
 import userRoutes from './routes/user.js';
 import cronRoutes from './routes/cron.js';
+import adminRoutes from './routes/admin.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/buymeacoffee', bmcRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/cron', cronRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

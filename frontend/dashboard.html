@@ -33,7 +33,6 @@
       </div>
       <div id="stripe-action-container">
         <!-- Rendered Dynamically -->
-        <button id="billing-btn" class="btn btn-primary">Manage Billing</button>
       </div>
     </div>
 
@@ -46,7 +45,7 @@
         <!-- Status cards -->
         <div class="status-grid">
           <div class="glass-panel status-card">
-            <span class="label">Subscription</span>
+            <span class="label">Account Status</span>
             <div class="val status-indicator">
               <span id="sub-dot" class="pulse-dot inactive"></span>
               <span id="sub-status-text">Inactive</span>
@@ -124,20 +123,51 @@
           </ol>
         </div>
 
-        <!-- Premium Status Info -->
+        <!-- Account Status Info -->
         <div class="glass-panel" style="padding: 2rem;">
-          <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Subscription Details</h3>
+          <h3 style="margin-bottom: 1rem; font-size: 1.25rem;" id="activation-card-title">Account Activation</h3>
           <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;" id="pricing-info-text">
-            Subscriptions cost ₹149/mo. Your subscription powers our serverless worker executing your vote updates.
+            Your account must be manually approved by the administrator to enable automated voting.
           </p>
           <div id="stripe-card-container">
-            <!-- Dynamically populated checkout button -->
+            <!-- Dynamically populated status indicator -->
           </div>
         </div>
 
       </div>
 
     </div>
+
+    <!-- Admin Section (Only visible to admin) -->
+    <section id="admin-panel" class="glass-panel admin-section" style="display: none; margin-top: 2rem; padding: 2rem;">
+      <div class="admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.8rem; margin: 0; color: var(--primary);">Admin Control Panel</h2>
+          <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem;">Manage user approvals and trigger the automated voting cron manually.</p>
+        </div>
+        <button id="trigger-cron-btn" class="btn btn-accent">Trigger Vote Cron Now</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Last Vote</th>
+              <th>Last Result</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-table-body">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading registered users...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <!-- Toast Alert -->
