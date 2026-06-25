@@ -1,0 +1,15 @@
+name: Trigger Vote Cron
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Triggers every 6 hours
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger endpoint
+        run: |
+          curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://https://k-voter-saas.vercel.app/api/cron/vote
