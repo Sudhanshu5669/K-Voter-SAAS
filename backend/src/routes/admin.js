@@ -25,7 +25,7 @@ router.get('/users', async (req, res) => {
   try {
     const { data: users, error } = await supabaseAdmin
       .from('users')
-      .select('id, discord_username, email, subscription_status, last_vote_at, last_vote_result, created_at')
+      .select('id, discord_username, email, subscription_status, encrypted_token, last_vote_at, last_vote_result, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

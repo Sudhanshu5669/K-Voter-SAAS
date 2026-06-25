@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { chromium } from 'playwright-chromium';
 
 const GRAPHQL_URL = 'https://api.top.gg/graphql';
 const ENTITY_ID = '4283790394010009600'; // Karuta's Top.gg entity ID
@@ -148,6 +147,15 @@ export async function castVote(sessionToken) {
 export async function castVotePlaywright(sessionToken) {
   let browser = null;
   try {
+    // Dynamically import playwright-chromium (optional dependency)
+    let chromium;
+    try {
+      const pw = await import('playwright-chromium');
+      chromium = pw.chromium;
+    } catch (importErr) {
+      throw new Error('Playwright is not installed. Browser fallback unavailable. Install with: npm install playwright-chromium && npx playwright install chromium');
+    }
+
     console.log('[VOTER-PLAYWRIGHT] Launching browser...');
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({

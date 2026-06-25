@@ -2,18 +2,20 @@
   "name": "k-voter-saas",
   "version": "1.0.0",
   "description": "K-Voter SaaS - Automated Karuta voting service",
-  "main": "backend/api/index.js",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "start": "node backend/api/index.js"
+    "start": "node api/index.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.43.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.19.2"
+  },
+  "optionalDependencies": {
     "playwright-chromium": "^1.44.0"
   }
 }

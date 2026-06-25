@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!users || users.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align: center; color: var(--text-muted);">No registered users found.</td>
+            <td colspan="7" style="text-align: center; color: var(--text-muted);">No registered users found.</td>
           </tr>`;
         return;
       }
@@ -281,6 +281,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         badge.className = isApproved ? 'badge badge-success' : 'badge badge-danger';
         statusCell.appendChild(badge);
         row.appendChild(statusCell);
+
+        // Token Badge
+        const tokenCell = document.createElement('td');
+        const tokenBadge = document.createElement('span');
+        const hasToken = !!user.encrypted_token;
+        tokenBadge.textContent = hasToken ? 'SET' : 'MISSING';
+        tokenBadge.className = hasToken ? 'badge badge-success' : 'badge badge-warning';
+        tokenCell.appendChild(tokenBadge);
+        row.appendChild(tokenCell);
 
         // Last Vote Time
         const lastVoteCell = document.createElement('td');
@@ -344,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('[ADMIN] Load user list error:', e);
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; color: var(--error);">Error loading registered users list.</td>
+          <td colspan="7" style="text-align: center; color: var(--error);">Error loading registered users list.</td>
         </tr>`;
     }
   }

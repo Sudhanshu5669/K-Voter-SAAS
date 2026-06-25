@@ -10,16 +10,32 @@ import adminRoutes from './routes/admin.js';
 const app = express();
 
 // CORS configuration
-app.use(cors({
-  origin: (origin, callback) => {
-    const allowedUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    if (!origin || origin === allowedUrl || origin.startsWith('http://localhost') || origin.endsWith('.vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+app.use(cors((req, callback) => {
+  const origin = req.header('Origin');
+  const host = req.header('Host');
+  const allowedUrl = process.env.FRONTEND_URL;
+  
+  let isAllowed = false;
+  if (!origin) {
+    isAllowed = true;
+  } else {
+    const hostOriginHttp = `http://${host}`;
+    const hostOriginHttps = `https://${host}`;
+    if (
+      origin === hostOriginHttp ||
+      origin === hostOriginHttps ||
+      origin.startsWith('http://localhost') ||
+      origin.endsWith('.vercel.app') ||
+      (allowedUrl && origin === allowedUrl)
+    ) {
+      isAllowed = true;
     }
-  },
-  credentials: true
+  }
+
+  callback(null, {
+    origin: isAllowed ? origin : false,
+    credentials: true
+  });
 }));
 
 app.use(cookieParser());
