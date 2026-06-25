@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Voter — Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-container">
+      <a href="dashboard.html" class="logo">K-Voter<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><button id="logout-btn" class="btn btn-secondary">Logout</button></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Dashboard Content -->
+  <main class="container dashboard-layout">
+    
+    <!-- Dashboard Header / Welcome Profile -->
+    <div class="dashboard-header">
+      <div class="user-profile">
+        <img id="user-avatar" class="avatar" src="" alt="Discord Avatar" style="display: none;">
+        <div class="user-info">
+          <h2>Welcome back, <span id="username">User</span></h2>
+          <p id="user-email">loading account email...</p>
+        </div>
+      </div>
+      <div id="stripe-action-container">
+        <!-- Rendered Dynamically -->
+        <button id="billing-btn" class="btn btn-primary">Manage Billing</button>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dash-grid">
+      
+      <!-- Left Column: Settings and Logs -->
+      <div>
+        
+        <!-- Status cards -->
+        <div class="status-grid">
+          <div class="glass-panel status-card">
+            <span class="label">Subscription</span>
+            <div class="val status-indicator">
+              <span id="sub-dot" class="pulse-dot inactive"></span>
+              <span id="sub-status-text">Inactive</span>
+            </div>
+          </div>
+          <div class="glass-panel status-card">
+            <span class="label">Top.gg Token</span>
+            <div class="val">
+              <span id="token-status-badge" class="badge badge-warning">Missing</span>
+            </div>
+          </div>
+          <div class="glass-panel status-card">
+            <span class="label">Last Vote Cast</span>
+            <div class="val" id="last-vote-time" style="font-size: 1.1rem; line-height: 1.3;">Never</div>
+          </div>
+          <div class="glass-panel status-card">
+            <span class="label">Last Result</span>
+            <div class="val">
+              <span id="last-vote-result-badge" class="badge badge-info">N/A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Token config form -->
+        <div class="glass-panel config-section">
+          <h3 style="margin-bottom: 1rem; font-size: 1.4rem;">Top.gg Authentication</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">Enter your Top.gg session token below. Your token is encrypted instantly upon submission and decrypted only inside volatile memory during vote requests.</p>
+          
+          <form id="token-form">
+            <div class="form-group">
+              <label for="token-input">__Secure-authjs.session-token</label>
+              <div class="input-wrapper">
+                <input type="password" id="token-input" class="form-control" placeholder="eyJhbGciOi..." required>
+              </div>
+              <p class="help-text">Don't know how to get this? Follow our simple <a href="#" id="view-guide-btn">Extraction Guide</a>.</p>
+            </div>
+            <button type="submit" id="save-token-btn" class="btn btn-accent">Save & Secure Token</button>
+          </form>
+        </div>
+
+        <!-- Execution logs -->
+        <div class="glass-panel logs-section">
+          <h3>Execution History</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="logs-table-body">
+                <tr>
+                  <td colspan="3" style="text-align: center; color: var(--text-muted);">No execution logs available yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Instructions / Billing Overview -->
+      <div>
+        
+        <!-- Step-by-step widget -->
+        <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Quick Setup Guide</h3>
+          <ol style="margin-left: 1.25rem; color: var(--text-secondary); font-size: 0.9rem; display: flex; flex-direction: column; gap: 1rem;">
+            <li><strong>Login to Top.gg:</strong> Go to <a href="https://top.gg" target="_blank" style="color: var(--primary); text-decoration: underline;">top.gg</a> and log in via Discord.</li>
+            <li><strong>Find the Cookie:</strong> Open DevTools (F12) &rarr; Go to <strong>Application</strong> &rarr; <strong>Cookies</strong> &rarr; Select `https://top.gg`.</li>
+            <li><strong>Copy value:</strong> Locate the cookie named <code>__Secure-authjs.session-token</code> and copy its entire text value.</li>
+            <li><strong>Paste & Save:</strong> Paste it in the input field to the left, hit save, and you're fully configured!</li>
+          </ol>
+        </div>
+
+        <!-- Premium Status Info -->
+        <div class="glass-panel" style="padding: 2rem;">
+          <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">Subscription Details</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;" id="pricing-info-text">
+            Subscriptions cost ₹149/mo. Your subscription powers our serverless worker executing your vote updates.
+          </p>
+          <div id="stripe-card-container">
+            <!-- Dynamically populated checkout button -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Alert -->
+  <div id="toast" class="toast">
+    <span id="toast-message">Success!</span>
+  </div>
+
+  <!-- Supabase & JS Files -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

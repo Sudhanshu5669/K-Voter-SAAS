@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Voter — Automated Karuta Votes, Elevated</title>
+  <meta name="description" content="Securely automate your Top.gg votes for Karuta. Set it up in 2 minutes and never miss a vote cooldown again.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-container">
+      <a href="index.html" class="logo">K-Voter<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><button id="nav-auth-btn" class="btn btn-secondary">Login</button></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero container">
+    <h1>Never Miss a Cooldown.<br>Automate Your <span>Karuta Votes</span>.</h1>
+    <p>Securely save your session token once. Our automated systems check and cast your votes every 6 hours, keeping your streak alive 24/7 with zero effort.</p>
+    <div class="hero-cta">
+      <button id="hero-login-btn" class="btn btn-primary">Get Started Now</button>
+      <a href="#features" class="btn btn-secondary">Learn More</a>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features container">
+    <h2 class="section-title">Why Choose <span>K-Voter</span></h2>
+    <div class="grid-3">
+      <div class="glass-panel feature-card">
+        <div class="icon-box">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <h3>Set & Forget Automation</h3>
+        <p>Our serverless engine runs every 6 hours. It automatically handles the 12-hour Top.gg vote cooldown, guaranteeing you cast maximum votes daily.</p>
+      </div>
+
+      <div class="glass-panel feature-card">
+        <div class="icon-box">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <h3>AES-256 Encryption</h3>
+        <p>Security is our core pillar. Your Top.gg session token is fully encrypted at rest using AES-256-GCM. We never see your token, and it is decrypted only in memory during vote calls.</p>
+      </div>
+
+      <div class="glass-panel feature-card">
+        <div class="icon-box">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+        </div>
+        <h3>Realtime Execution Logs</h3>
+        <p>Keep track of every execution. Monitor your voting history, success reports, and next cooldown timers in real time directly from your personal dashboard.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing container">
+    <div class="glass-panel pricing-card">
+      <div class="price-title">Premium Access</div>
+      <div class="price-amount">₹149<span>/month</span></div>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">Full access to automatic voting services, zero configuration maintenance, and military grade cookie safety.</p>
+      <ul class="price-features">
+        <li>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          Automatic voting for Karuta on Top.gg
+        </li>
+        <li>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          Runs every 6 hours for redundant fail-safe
+        </li>
+        <li>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          AES-256-GCM token encryption
+        </li>
+        <li>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          Live dashboard and execution logs
+        </li>
+        <li>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          Self-manage billing via Stripe Portal
+        </li>
+      </ul>
+      <button id="price-subscribe-btn" class="btn btn-accent" style="width: 100%;">Get Started with Discord</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 K-Voter. Designed for premium convenience and absolute secrecy. Not affiliated with Discord, Karuta, or Top.gg.</p>
+    </div>
+  </footer>
+
+  <!-- Supabase & Frontend JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
