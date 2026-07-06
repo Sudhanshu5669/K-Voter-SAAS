@@ -47,6 +47,7 @@ export async function checkVoteStatus(sessionToken) {
 
     const voteStatus = resBody.data?.entity?.voteStatus;
     if (!voteStatus) {
+      console.error('[VOTER] GraphQL response missing voteStatus. Full body:', JSON.stringify(resBody));
       throw new Error('Vote status details missing in GraphQL response');
     }
 
