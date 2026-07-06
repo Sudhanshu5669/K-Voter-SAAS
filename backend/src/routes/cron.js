@@ -148,15 +148,33 @@ export async function executeVoteCron() {
 
           // Fallback to Playwright if API failed or if we are in fallback mode
           if (isFallback || (voteResult && voteResult.status === 'error')) {
-            console.log(`[CRON] Launching Playwright browser method for ${user.discord_username}...`);
-            try {
-              voteResult = await castVotePlaywright(token);
-            } catch (pwError) {
-              console.error(`[CRON] Playwright execution failed for ${user.discord_username}:`, pwError.message);
-              voteResult = {
-                status: 'error',
-                detail: `GraphQL/API failed. Playwright error: ${pwError.message}`
-              };
+            let pwAttempts = 0;
+            const maxPwAttempts = 3;
+
+            while (pwAttempts < maxPwAttempts) {
+              pwAttempts++;
+              console.log(`[CRON] Launching Playwright browser method for ${user.discord_username} (Attempt ${pwAttempts}/${maxPwAttempts})...`);
+              
+              try {
+                voteResult = await castVotePlaywright(token);
+                
+                // If it is not a captcha, we don't need to retry
+                if (voteResult.status !== 'captcha') {
+                  break;
+                }
+                
+                if (pwAttempts < maxPwAttempts) {
+                  console.log(`[CRON] Captcha encountered. Resetting browser context and retrying in 5 seconds...`);
+                  await delay(5000);
+                }
+              } catch (pwError) {
+                console.error(`[CRON] Playwright execution failed for ${user.discord_username}:`, pwError.message);
+                voteResult = {
+                  status: 'error',
+                  detail: `GraphQL/API failed. Playwright error: ${pwError.message}`
+                };
+                break; // Stop on fatal errors (e.g., Playwright not installed)
+              }
             }
           }
 
