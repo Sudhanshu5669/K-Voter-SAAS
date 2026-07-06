@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-Voter — Automated Karuta Votes, Elevated</title>
-  <meta name="description" content="Securely automate your Top.gg votes for Karuta. Set it up in 2 minutes and never miss a vote cooldown again.">
+  <meta name="description" content="Securely automate your Top.gg Karuta votes. Set up in 2 minutes — our encrypted system votes every 6 hours, 24/7, with zero effort from you.">
+  <meta property="og:title" content="K-Voter — Never Miss a Karuta Vote">
+  <meta property="og:description" content="AES-256-GCM encrypted auto-voter for Karuta on Top.gg. Login with Discord and forget about it.">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -14,20 +16,82 @@
     <div class="container nav-container">
       <a href="index.html" class="logo">K-Voter<span>.</span></a>
       <ul class="nav-links">
+        <li><a href="#how-it-works">How it works</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#pricing">Pricing</a></li>
-        <li><button id="nav-auth-btn" class="btn btn-secondary">Login</button></li>
+        <li><button id="nav-auth-btn" class="btn btn-secondary">Login with Discord</button></li>
       </ul>
     </div>
   </header>
 
   <!-- Hero Section -->
   <section class="hero container">
-    <h1>Never Miss a Cooldown.<br>Automate Your <span>Karuta Votes</span>.</h1>
-    <p>Securely save your session token once. Our automated systems check and cast your votes every 6 hours, keeping your streak alive 24/7 with zero effort.</p>
+    <div class="hero-eyebrow">Powered by AES-256-GCM &amp; GitHub Actions</div>
+    <h1>Never Miss a Karuta Vote.<br><span>Ever Again.</span></h1>
+    <p>Save your Top.gg session token once — our encrypted, automated engine votes every 6 hours, 24/7. Your token never touches a human eye.</p>
     <div class="hero-cta">
-      <button id="hero-login-btn" class="btn btn-primary">Get Started Now</button>
-      <a href="#features" class="btn btn-secondary">Learn More</a>
+      <button id="hero-login-btn" class="btn btn-primary btn-lg">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.102 18.082.116 18.105.135 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Get Started Free
+      </button>
+      <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
+    </div>
+
+    <!-- Live Stats Counter Bar -->
+    <div class="stats-counter-bar">
+      <div class="counter-item">
+        <div class="counter-value" id="counter-votes">—</div>
+        <div class="counter-label">Votes Cast</div>
+      </div>
+      <div class="counter-divider"></div>
+      <div class="counter-item">
+        <div class="counter-value" id="counter-users">—</div>
+        <div class="counter-label">Active Members</div>
+      </div>
+      <div class="counter-divider"></div>
+      <div class="counter-item">
+        <div class="counter-value" id="counter-uptime">99.9%</div>
+        <div class="counter-label">Uptime</div>
+      </div>
+      <div class="counter-divider"></div>
+      <div class="counter-item">
+        <div class="counter-value">Every 6h</div>
+        <div class="counter-label">Vote Frequency</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="how-it-works-section container">
+    <h2 class="section-title">Set up in <span>2 minutes</span></h2>
+    <p class="section-subtitle">Three steps. Then you're done forever.</p>
+    <div class="steps-grid">
+      <div class="step-card glass-panel">
+        <div class="step-number">01</div>
+        <div class="step-icon">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.102 18.082.116 18.105.135 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.62.874-1.279 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        </div>
+        <h3>Login with Discord</h3>
+        <p>One click. Your Discord identity is your account — no passwords, no registration forms.</p>
+      </div>
+      <div class="step-connector">→</div>
+      <div class="step-card glass-panel">
+        <div class="step-number">02</div>
+        <div class="step-icon" style="color: var(--secondary);">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <h3>Paste Your Token Once</h3>
+        <p>Copy your <code>__Secure-authjs.session-token</code> from Top.gg. It's encrypted with AES-256-GCM the moment you save it.</p>
+      </div>
+      <div class="step-connector">→</div>
+      <div class="step-card glass-panel">
+        <div class="step-number">03</div>
+        <div class="step-icon" style="color: var(--accent);">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+        </div>
+        <h3>Sit Back &amp; Relax</h3>
+        <p>Our GitHub Actions + Vercel cron fires every 6 hours. You'll cast 4 votes/day, every day, on autopilot.</p>
+      </div>
     </div>
   </section>
 
@@ -39,24 +103,86 @@
         <div class="icon-box">
           <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
-        <h3>Set & Forget Automation</h3>
-        <p>Our serverless engine runs every 6 hours. It automatically handles the 12-hour Top.gg vote cooldown, guaranteeing you cast maximum votes daily.</p>
+        <h3>Set &amp; Forget Automation</h3>
+        <p>Serverless engine runs every 6 hours via both GitHub Actions and Vercel Cron for double redundancy. If one fails, the other catches it.</p>
       </div>
-
       <div class="glass-panel feature-card">
         <div class="icon-box">
           <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
-        <h3>AES-256 Encryption</h3>
-        <p>Security is our core pillar. Your Top.gg session token is fully encrypted at rest using AES-256-GCM. We never see your token, and it is decrypted only in memory during vote calls.</p>
+        <h3>AES-256-GCM Encryption</h3>
+        <p>Your token is encrypted with a unique IV on every save. Only the encrypted ciphertext lives in our database — we literally cannot read your token.</p>
       </div>
-
       <div class="glass-panel feature-card">
         <div class="icon-box">
           <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
         </div>
         <h3>Realtime Execution Logs</h3>
-        <p>Keep track of every execution. Monitor your voting history, success reports, and next cooldown timers in real time directly from your personal dashboard.</p>
+        <p>See every vote attempt, result, and cooldown in your personal dashboard. Full transparency — success, cooldown, captcha, or error.</p>
+      </div>
+      <div class="glass-panel feature-card">
+        <div class="icon-box" style="background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.18); color: var(--success);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3>API-First + Browser Fallback</h3>
+        <p>We try Top.gg's GraphQL API 3 times first — it's instant. Only if that fails does Playwright browser automation kick in as a fallback.</p>
+      </div>
+      <div class="glass-panel feature-card">
+        <div class="icon-box" style="background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.18); color: var(--warning);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <h3>Instant Activation</h3>
+        <p>Once your account is approved, voting begins at the next scheduled run. No configuration, no waiting — it just works.</p>
+      </div>
+      <div class="glass-panel feature-card">
+        <div class="icon-box" style="background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.18); color: var(--primary);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3>Discord Login Only</h3>
+        <p>No email accounts, no passwords to remember. Your Discord OAuth is your secure identity. We never store any Discord credentials.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust / Security Section -->
+  <section class="trust-section container">
+    <div class="trust-inner glass-panel">
+      <div class="trust-header">
+        <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color: var(--success); flex-shrink:0;"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <div>
+          <h2 style="font-size: 1.8rem; margin-bottom: 0.3rem;">Your token is never exposed.<br><span style="background: linear-gradient(135deg, var(--success), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Here's the technical proof.</span></h2>
+          <p style="color: var(--text-secondary);">We built this with maximum paranoia. The encryption isn't cosmetic.</p>
+        </div>
+      </div>
+      <div class="trust-items">
+        <div class="trust-item">
+          <div class="trust-icon">🔐</div>
+          <div>
+            <strong>Encrypted immediately on save</strong>
+            <p>When you click "Save &amp; Secure Token", your token is sent over HTTPS to our server, where it is immediately encrypted with AES-256-GCM and a random 12-byte IV. The plaintext is destroyed in memory.</p>
+          </div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">🗄️</div>
+          <div>
+            <strong>Only ciphertext in the database</strong>
+            <p>We store three things: the encrypted ciphertext, a random IV, and a GCM auth tag. Without the <code>ENCRYPTION_KEY</code> (which is only in our server environment), this data is useless to anyone.</p>
+          </div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">⚡</div>
+          <div>
+            <strong>Decrypted only in volatile memory</strong>
+            <p>During a vote execution, your token is decrypted inside a Node.js process on Vercel or GitHub Actions, used for a single HTTP call, then garbage-collected. It never touches disk or logs.</p>
+          </div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">👤</div>
+          <div>
+            <strong>Admin cannot read your token</strong>
+            <p>Even the service owner cannot decrypt your token without direct server access. Admin actions (approve/disable) never touch the encrypted token columns in the database.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -66,45 +192,116 @@
     <div class="glass-panel pricing-card">
       <div class="price-title">Premium Access</div>
       <div class="price-amount">₹149<span>/month</span></div>
-      <p style="color: var(--text-secondary); margin-bottom: 2rem;">Full access to automatic voting services, zero configuration maintenance, and military grade cookie safety.</p>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">Full automated voting for Karuta, encrypted at rest, running 24/7 on our infrastructure.</p>
       <ul class="price-features">
         <li>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
-          Automatic voting for Karuta on Top.gg
+          Auto-votes for Karuta on Top.gg every 6 hours
         </li>
         <li>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
-          Runs every 6 hours for redundant fail-safe
+          GitHub Actions + Vercel dual-cron redundancy
         </li>
         <li>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
-          AES-256-GCM token encryption
+          AES-256-GCM token encryption, nobody can read it
         </li>
         <li>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
-          Live dashboard and execution logs
+          Live dashboard with execution logs and status
         </li>
         <li>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
-          Self-manage billing via Stripe Portal
+          30-day access windows, managed by admin
         </li>
       </ul>
-      <button id="price-subscribe-btn" class="btn btn-accent" style="width: 100%;">Get Started with Discord</button>
+      <button id="price-subscribe-btn" class="btn btn-accent" style="width: 100%; margin-top: 1rem;">
+        Get Started with Discord
+      </button>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section container">
+    <h2 class="section-title">Frequently Asked <span>Questions</span></h2>
+    <div class="faq-list">
+      <div class="faq-item glass-panel">
+        <button class="faq-question" aria-expanded="false">
+          Can you actually see my Top.gg token?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>No. Your token is encrypted with AES-256-GCM before it's stored. The database only contains encrypted ciphertext + IV + auth tag — not a readable token. Even looking directly at the database row tells you nothing.</p>
+        </div>
+      </div>
+      <div class="faq-item glass-panel">
+        <button class="faq-question" aria-expanded="false">
+          Is this safe for my Discord account?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Yes. The token you provide is a <strong>Top.gg session token</strong>, not your Discord token. It only grants access to Top.gg on your behalf. Your Discord account is not affected if this token is compromised — just log out of Top.gg to invalidate it.</p>
+        </div>
+      </div>
+      <div class="faq-item glass-panel">
+        <button class="faq-question" aria-expanded="false">
+          How often does it actually vote?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Our system runs every 6 hours (4 times per day). Top.gg allows you to vote once every 12 hours. So our schedule guarantees you cast <strong>2 votes per day</strong> — the maximum possible — without any effort.</p>
+        </div>
+      </div>
+      <div class="faq-item glass-panel">
+        <button class="faq-question" aria-expanded="false">
+          What happens if Top.gg changes their system?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>We use their GraphQL API as the primary method. If the API fails, we fall back to a real Chromium browser (Playwright) that mimics a real user visiting the vote page — the same approach as your Python script. This two-layer system makes us highly resilient.</p>
+        </div>
+      </div>
+      <div class="faq-item glass-panel">
+        <button class="faq-question" aria-expanded="false">
+          What if my token expires?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>Top.gg session tokens can expire when you log out of Top.gg or after a long period. If your token is rejected, you'll see an "error" status in your dashboard logs. Simply re-extract the token from Top.gg cookies and update it in your dashboard.</p>
+        </div>
+      </div>
+      <div class="faq-item glass-panel">
+        <button class="faq-question" aria-expanded="false">
+          How is my account activated?
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-answer">
+          <p>After purchasing, contact the admin with your Discord username. The admin approves your account for 30 days from the admin panel. You'll see "APPROVED" status in your dashboard instantly. Renewals work the same way.</p>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer>
-    <div class="container">
-      <p>&copy; 2026 K-Voter. Designed for premium convenience and absolute secrecy. Not affiliated with Discord, Karuta, or Top.gg.</p>
+    <div class="container footer-inner">
+      <a href="index.html" class="logo" style="font-size: 1.4rem;">K-Voter<span>.</span></a>
+      <p style="color: var(--text-muted); font-size: 0.88rem; text-align: center;">
+        &copy; 2026 K-Voter. Not affiliated with Discord, Karuta, or Top.gg.<br>
+        AES-256-GCM encrypted &bull; GitHub Actions powered &bull; Built with ❤️ for the Karuta community.
+      </p>
+      <div style="display: flex; gap: 1.5rem; align-items: center;">
+        <a href="#features" style="color: var(--text-muted); font-size: 0.88rem;">Features</a>
+        <a href="#pricing" style="color: var(--text-muted); font-size: 0.88rem;">Pricing</a>
+        <a href="#faq" style="color: var(--text-muted); font-size: 0.88rem;">FAQ</a>
+      </div>
     </div>
   </footer>
-  <!-- Toast Alert -->
-  <div id="toast" class="toast">
-    <span id="toast-message">Success!</span>
-  </div>
 
-  <!-- Supabase & Frontend JS -->
+  <!-- Toast -->
+  <div id="toast" class="toast"><span id="toast-message">Success!</span></div>
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>

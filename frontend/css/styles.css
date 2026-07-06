@@ -644,3 +644,504 @@ footer {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOAST VARIANTS — info & warning (success/error already existed)
+═══════════════════════════════════════════════════════════════════════════ */
+.toast-info {
+  background: rgba(59, 130, 246, 0.9);
+  border: 1px solid var(--info);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.toast-warning {
+  background: rgba(245, 158, 11, 0.9);
+  border: 1px solid var(--warning);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTON VARIANTS
+═══════════════════════════════════════════════════════════════════════════ */
+.btn-lg {
+  padding: 1rem 2.25rem;
+  font-size: 1.05rem;
+  gap: 0.6rem;
+}
+
+.btn-xs {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+.action-btn-group {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDING PAGE — Hero upgrades
+═══════════════════════════════════════════════════════════════════════════ */
+.hero-eyebrow {
+  display: inline-block;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 1.1rem;
+  border-radius: 99px;
+  margin-bottom: 1.75rem;
+}
+
+/* Stats Counter Bar */
+.stats-counter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: 4rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  padding: 1.5rem 2.5rem;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.counter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 2.5rem;
+}
+
+.counter-value {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+
+.counter-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.counter-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--panel-border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .stats-counter-bar {
+    padding: 1.25rem 1.5rem;
+    gap: 1rem;
+  }
+  .counter-item {
+    padding: 0.35rem 1rem;
+  }
+  .counter-divider {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDING PAGE — How It Works
+═══════════════════════════════════════════════════════════════════════════ */
+.how-it-works-section {
+  padding: 6rem 0;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin-top: -2rem;
+  margin-bottom: 3.5rem;
+}
+
+.steps-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.step-card {
+  padding: 2.5rem 2rem;
+  text-align: center;
+  flex: 1;
+  min-width: 220px;
+  max-width: 280px;
+  position: relative;
+}
+
+.step-number {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.step-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  margin: 0 auto 1.25rem;
+}
+
+.step-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 0.6rem;
+}
+
+.step-card p {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.step-card code {
+  font-size: 0.78rem;
+  background: rgba(255,255,255,0.06);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  color: var(--secondary);
+  word-break: break-all;
+}
+
+.step-connector {
+  font-size: 1.8rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  padding: 0 0.5rem;
+}
+
+@media (max-width: 760px) {
+  .step-connector { display: none; }
+  .steps-grid { flex-direction: column; align-items: stretch; }
+  .step-card { max-width: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDING PAGE — Security Trust Section
+═══════════════════════════════════════════════════════════════════════════ */
+.trust-section {
+  padding: 4rem 0 5rem;
+}
+
+.trust-inner {
+  padding: 3rem;
+}
+
+.trust-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+@media (max-width: 640px) {
+  .trust-header { flex-direction: column; }
+}
+
+.trust-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.trust-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.trust-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.trust-item strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.trust-item p {
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.trust-item code {
+  font-size: 0.8rem;
+  background: rgba(255,255,255,0.06);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  color: var(--secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDING PAGE — FAQ Section
+═══════════════════════════════════════════════════════════════════════════ */
+.faq-section {
+  padding: 5rem 0 8rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faq-item {
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.75rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  cursor: pointer;
+  text-align: left;
+  gap: 1rem;
+  transition: color 0.2s;
+}
+
+.faq-question:hover {
+  color: var(--primary);
+}
+
+.faq-chevron {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.faq-item.open .faq-chevron {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0 1.75rem;
+}
+
+.faq-item.open .faq-answer {
+  max-height: 300px;
+  padding: 0 1.75rem 1.5rem;
+}
+
+.faq-answer p {
+  color: var(--text-secondary);
+  font-size: 0.93rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.faq-answer strong {
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN PAGE — Page Header
+═══════════════════════════════════════════════════════════════════════════ */
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.admin-title {
+  font-size: 2rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  margin: 0;
+}
+
+.admin-title span {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.admin-cron-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN PAGE — Stats Bar
+═══════════════════════════════════════════════════════════════════════════ */
+.admin-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.admin-stat-card {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN PAGE — Cron Result Panel
+═══════════════════════════════════════════════════════════════════════════ */
+.cron-result-panel {
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.cron-results-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .cron-results-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.cron-result-item {
+  text-align: center;
+  padding: 1.25rem;
+  border-radius: 14px;
+}
+
+.cron-result-item.cron-success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.cron-result-item.cron-info {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.cron-result-item.cron-warning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.cron-result-item.cron-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.cron-result-count {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.cron-result-item.cron-success .cron-result-count { color: var(--success); }
+.cron-result-item.cron-info    .cron-result-count { color: var(--info); }
+.cron-result-item.cron-warning .cron-result-count { color: var(--warning); }
+.cron-result-item.cron-danger  .cron-result-count { color: var(--error); }
+
+.cron-result-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN PAGE — User Management Table
+═══════════════════════════════════════════════════════════════════════════ */
+.admin-users-section {
+  padding: 2rem;
+}
+
+.admin-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-users-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+

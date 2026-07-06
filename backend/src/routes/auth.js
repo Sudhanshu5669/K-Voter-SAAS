@@ -41,7 +41,6 @@ router.get('/me', requireAuth, async (req, res) => {
             id: userId,
             discord_username: metadata.full_name || metadata.custom_claims?.global_name || 'Discord User',
             email: req.user.email,
-            stripe_customer_id: null,
             subscription_status: 'inactive'
           })
           .select()

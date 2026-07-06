@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>K-Voter — Admin Panel</title>
+  <meta name="description" content="K-Voter administrator control panel. Restricted access.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-container">
+      <a href="admin.html" class="logo">K-Voter<span>.</span></a>
+      <ul class="nav-links">
+        <li>
+          <span class="badge badge-warning" style="font-size: 0.72rem; letter-spacing: 0.1em; padding: 0.3rem 0.9rem;">
+            ⚡ ADMIN MODE
+          </span>
+        </li>
+        <li><a href="dashboard.html" style="color: var(--text-secondary);">My Dashboard</a></li>
+        <li><button id="logout-btn" class="btn btn-secondary">Logout</button></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container dashboard-layout">
+
+    <!-- Page Header -->
+    <div class="admin-page-header">
+      <div>
+        <h1 class="admin-title">Admin <span>Control Panel</span></h1>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.4rem;">
+          Manage approvals, monitor voting health, and dispatch cron jobs.
+        </p>
+      </div>
+      <div class="admin-cron-actions">
+        <button id="trigger-internal-btn" class="btn btn-primary" title="Execute vote function directly on Vercel — instant result">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M5 3l14 9-14 9V3z"/></svg>
+          Run Internal Cron
+        </button>
+        <button id="trigger-github-btn" class="btn btn-accent" title="Dispatch GitHub Actions workflow — runs in GH environment with Playwright support">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          Dispatch GitHub Action
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="admin-stats-bar">
+      <div class="glass-panel admin-stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="glass-panel admin-stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" id="stat-active" style="color: var(--success);">—</div>
+      </div>
+      <div class="glass-panel admin-stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="stat-pending" style="color: var(--warning);">—</div>
+      </div>
+      <div class="glass-panel admin-stat-card">
+        <div class="stat-label">Votes Today</div>
+        <div class="stat-value" id="stat-votes-today" style="color: var(--secondary);">—</div>
+      </div>
+      <div class="glass-panel admin-stat-card">
+        <div class="stat-label">Total Votes</div>
+        <div class="stat-value" id="stat-total-votes" style="color: var(--primary);">—</div>
+      </div>
+    </div>
+
+    <!-- Cron Result Panel (shown after a cron trigger) -->
+    <div class="glass-panel cron-result-panel" id="cron-result-panel" style="display: none;">
+      <h3 style="margin-bottom: 1.25rem; font-size: 1.1rem; color: var(--text-primary);">
+        ⚡ Last Cron Execution Result
+      </h3>
+      <div class="cron-results-grid">
+        <div class="cron-result-item cron-success">
+          <div class="cron-result-count" id="cron-res-success">0</div>
+          <div class="cron-result-label">✅ Voted</div>
+        </div>
+        <div class="cron-result-item cron-info">
+          <div class="cron-result-count" id="cron-res-already">0</div>
+          <div class="cron-result-label">⏱ Already Voted</div>
+        </div>
+        <div class="cron-result-item cron-warning">
+          <div class="cron-result-count" id="cron-res-captcha">0</div>
+          <div class="cron-result-label">🤖 Captcha</div>
+        </div>
+        <div class="cron-result-item cron-danger">
+          <div class="cron-result-count" id="cron-res-error">0</div>
+          <div class="cron-result-label">❌ Error</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management Table -->
+    <div class="glass-panel admin-users-section">
+      <div class="admin-users-header">
+        <h2 style="font-size: 1.4rem; font-family: var(--font-display); font-weight: 700;">User Management</h2>
+        <div class="admin-users-controls">
+          <input
+            type="text"
+            id="user-search"
+            class="form-control"
+            placeholder="Search username or email..."
+            style="max-width: 270px; padding: 0.6rem 1rem; font-size: 0.88rem;"
+          >
+          <button id="refresh-btn" class="btn btn-secondary" style="padding: 0.6rem 1.1rem; font-size: 0.85rem; white-space: nowrap;">
+            ↺ Refresh
+          </button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Token</th>
+              <th>Last Vote</th>
+              <th>Result</th>
+              <th>Approved Until</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-body">
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                Loading users...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"><span id="toast-message"></span></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

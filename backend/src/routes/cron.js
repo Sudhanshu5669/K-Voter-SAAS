@@ -10,6 +10,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 /**
  * Core cron runner executing votes for all active (approved) users.
  * Supports a 3-strike API retry followed by a Playwright browser fallback.
+ * Also auto-deactivates users whose 30-day approval window has expired.
  */
 export async function executeVoteCron() {
   console.log('[CRON] Starting automated vote execution...');
@@ -18,7 +19,7 @@ export async function executeVoteCron() {
     // 1. Fetch all active users who have configured a token
     const { data: users, error } = await supabaseAdmin
       .from('users')
-      .select('id, discord_username, encrypted_token, token_iv, token_tag')
+      .select('id, discord_username, encrypted_token, token_iv, token_tag, approved_until')
       .eq('subscription_status', 'active')
       .not('encrypted_token', 'is', null);
 
@@ -33,21 +34,48 @@ export async function executeVoteCron() {
       success: 0,
       already_voted: 0,
       captcha: 0,
-      error: 0
+      error: 0,
+      expired: 0
     };
 
     // 2. Process each user sequentially with a polite delay
     for (const user of users) {
       console.log(`[CRON] Processing user: ${user.discord_username} (${user.id})`);
-      
+
       try {
-        // a. Decrypt Top.gg session token
+        // a. Check if 30-day approval window has expired
+        if (user.approved_until && new Date(user.approved_until) < new Date()) {
+          console.log(`[CRON] User ${user.discord_username} approval expired on ${user.approved_until}. Auto-deactivating...`);
+
+          await supabaseAdmin
+            .from('users')
+            .update({
+              subscription_status: 'inactive',
+              approved_until: null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+          await supabaseAdmin
+            .from('vote_logs')
+            .insert({
+              user_id: user.id,
+              status: 'error',
+              detail: 'Account approval period expired. Automated voting paused. Contact admin to renew.'
+            });
+
+          results.expired++;
+          results.error++;
+          continue; // Skip this user
+        }
+
+        // b. Decrypt Top.gg session token
         const token = decrypt(user.encrypted_token, user.token_iv, user.token_tag);
         if (!token) {
           throw new Error('Failed to decrypt session token');
         }
 
-        // b. Check if user is eligible to vote (Top.gg has a 12-hour cooldown)
+        // c. Check if user is eligible to vote (Top.gg has a 12-hour cooldown)
         const checkResult = await checkVoteStatus(token);
         
         if (checkResult.status === 'ERROR') {
@@ -77,7 +105,7 @@ export async function executeVoteCron() {
 
           results.already_voted++;
         } else {
-          // c. Eligible to vote, proceed to cast
+          // d. Eligible to vote, proceed to cast
           console.log(`[CRON] User ${user.discord_username} is eligible. Casting vote...`);
           
           let voteResult = null;
