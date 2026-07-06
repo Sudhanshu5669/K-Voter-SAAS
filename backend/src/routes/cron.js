@@ -76,10 +76,16 @@ export async function executeVoteCron() {
         }
 
         // c. Check if user is eligible to vote (Top.gg has a 12-hour cooldown)
-        const checkResult = await checkVoteStatus(token);
-        
-        if (checkResult.status === 'ERROR') {
-          throw new Error(`Vote check failed: ${checkResult.error || 'Unknown error'}`);
+        let checkResult;
+        try {
+          checkResult = await checkVoteStatus(token);
+          if (checkResult.status === 'ERROR') {
+            console.warn(`[CRON] GraphQL status check returned ERROR for ${user.discord_username}: ${checkResult.error}. Falling back to Playwright...`);
+            checkResult = { status: 'FALLBACK' };
+          }
+        } catch (checkErr) {
+          console.warn(`[CRON] GraphQL status check threw exception for ${user.discord_username}: ${checkErr.message}. Falling back to Playwright...`);
+          checkResult = { status: 'FALLBACK' };
         }
 
         if (checkResult.status === 'VOTED') {
@@ -105,46 +111,51 @@ export async function executeVoteCron() {
 
           results.already_voted++;
         } else {
-          // d. Eligible to vote, proceed to cast
-          console.log(`[CRON] User ${user.discord_username} is eligible. Casting vote...`);
-          
+          // d. Eligible to vote or fallback directly
           let voteResult = null;
-          let apiAttempts = 0;
-          const maxApiAttempts = 3;
+          const isFallback = (checkResult.status === 'FALLBACK');
 
-          while (apiAttempts < maxApiAttempts) {
-            apiAttempts++;
-            console.log(`[CRON] Attempt ${apiAttempts} using API method for ${user.discord_username}...`);
-            
-            // Wait 200ms before casting to split the check and cast
-            await delay(200);
-            voteResult = await castVote(token);
-            
-            if (voteResult.status === 'success' || voteResult.status === 'already_voted') {
-              break;
+          if (!isFallback) {
+            console.log(`[CRON] User ${user.discord_username} is eligible. Casting vote...`);
+            let apiAttempts = 0;
+            const maxApiAttempts = 3;
+
+            while (apiAttempts < maxApiAttempts) {
+              apiAttempts++;
+              console.log(`[CRON] Attempt ${apiAttempts} using API method for ${user.discord_username}...`);
+              
+              // Wait 200ms before casting to split the check and cast
+              await delay(200);
+              voteResult = await castVote(token);
+              
+              if (voteResult.status === 'success' || voteResult.status === 'already_voted') {
+                break;
+              }
+              if (voteResult.status === 'captcha') {
+                console.log(`[CRON] Captcha required. Skipping further API retries.`);
+                break;
+              }
+              
+              // Wait 1s before retrying
+              if (apiAttempts < maxApiAttempts) {
+                console.log(`[CRON] API Attempt ${apiAttempts} failed: ${voteResult.detail}. Retrying in 1s...`);
+                await delay(1000);
+              }
             }
-            if (voteResult.status === 'captcha') {
-              console.log(`[CRON] Captcha required. Skipping further API retries.`);
-              break;
-            }
-            
-            // Wait 1s before retrying
-            if (apiAttempts < maxApiAttempts) {
-              console.log(`[CRON] API Attempt ${apiAttempts} failed: ${voteResult.detail}. Retrying in 1s...`);
-              await delay(1000);
-            }
+          } else {
+            console.log(`[CRON] GraphQL check failed for ${user.discord_username}. Skipping API casting, proceeding directly to Playwright...`);
           }
 
-          // Fallback to Playwright if API failed 3 times
-          if (voteResult && voteResult.status === 'error') {
-            console.log(`[CRON] API method failed 3 times for ${user.discord_username}. Falling back to Playwright browser method...`);
+          // Fallback to Playwright if API failed or if we are in fallback mode
+          if (isFallback || (voteResult && voteResult.status === 'error')) {
+            console.log(`[CRON] Launching Playwright browser method for ${user.discord_username}...`);
             try {
               voteResult = await castVotePlaywright(token);
             } catch (pwError) {
-              console.error(`[CRON] Playwright fallback failed for ${user.discord_username}:`, pwError.message);
+              console.error(`[CRON] Playwright execution failed for ${user.discord_username}:`, pwError.message);
               voteResult = {
                 status: 'error',
-                detail: `API failed 3 times. Playwright fallback error: ${pwError.message}`
+                detail: `GraphQL/API failed. Playwright error: ${pwError.message}`
               };
             }
           }
