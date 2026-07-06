@@ -3,6 +3,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const heroLoginBtn = document.getElementById('hero-login-btn');
   const priceSubscribeBtn = document.getElementById('price-subscribe-btn');
 
+  // ── 0. Auto-redirect to dashboard if returning from OAuth ───────────────
+  if (window.location.hash.includes('access_token') || window.location.hash.includes('id_token')) {
+    try {
+      const isAuthenticated = await checkAuth();
+      if (isAuthenticated) {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+    } catch (err) {
+      console.error('OAuth redirect check failed:', err);
+    }
+  }
+
   // ── 1. Check if user is already authenticated ────────────────────────────
   try {
     const isAuthenticated = await checkAuth();
