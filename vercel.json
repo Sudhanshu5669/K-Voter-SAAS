@@ -3,11 +3,5 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/vote",
-      "schedule": "0 */6 * * *"
-    }
   ]
 }
