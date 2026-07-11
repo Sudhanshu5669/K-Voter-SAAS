@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { getBot } from '../config/bots.js';
+import { getBot, getEntityId } from '../config/bots.js';
 
 const GRAPHQL_URL = 'https://api.top.gg/graphql';
 
@@ -25,11 +25,12 @@ function getHeaders(sessionToken) {
  */
 export async function checkVoteStatus(sessionToken, bot = DEFAULT_BOT) {
   try {
+    const entityId = await getEntityId(bot);
     const payload = {
       query: "query gvs($i: String!) { entity(id: $i) { id voteStatus { timeUntilNextVote status id isSubscribed } } }",
       operationName: "gvs",
       variables: {
-        i: bot.entityId
+        i: entityId
       }
     };
 
@@ -79,11 +80,12 @@ export async function castVote(sessionToken, bot = DEFAULT_BOT) {
     const traceId = crypto.randomUUID();
     const encodedData = Buffer.from(JSON.stringify({ traceId })).toString('base64');
 
+    const entityId = await getEntityId(bot);
     const payload = {
       query: "mutation VoteEntity($entityId: String!, $encodedData: String!, $query: String!) { voteEntity(entityId: $entityId, encodedData: $encodedData, query: $query) { isAcknowledged newVoteCount canRetry error captchaProvider } }",
       operationName: "VoteEntity",
       variables: {
-        entityId: bot.entityId,
+        entityId: entityId,
         encodedData: encodedData,
         query: ""
       }
