@@ -30,14 +30,12 @@ export const BOTS = {
     entityId: '4283790394010009600',
     botId: '646937666251915264',
   },
-
-  // ── Example: uncomment and fill in the real IDs to enable Sofi ────────────
-  // sofi: {
-  //   key: 'sofi',
-  //   name: 'Sofi',
-  //   entityId: 'REPLACE_WITH_SOFI_ENTITY_ID',
-  //   botId: '853629533855809596',
-  // },
+  sofi: {
+    key: 'sofi',
+    name: 'Sofi',
+    entityId: 'REPLACE_WITH_SOFI_ENTITY_ID',
+    botId: '853629533855809596',
+  },
 };
 
 /**
