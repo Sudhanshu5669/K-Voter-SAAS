@@ -102,16 +102,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── Initial Data Load ─────────────────────────────────────────────────────
-  await Promise.all([loadStats(), loadUsers()]);
-
-  // Auto-refresh every 30 seconds
-  setInterval(async () => {
-    await Promise.all([loadStats(), loadUsers()]);
-  }, 30000);
-
   // ── State ─────────────────────────────────────────────────────────────────
   let allUsersData = [];
+  let allBots = []; // registry of assignable bots: [{ key, name }]
+
+  // ── Load Bot Registry ─────────────────────────────────────────────────────
+  async function loadBots() {
+    try {
+      const res = await fetch('/api/admin/bots', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      allBots = data.bots || [];
+    } catch (err) {
+      console.warn('[ADMIN] Bots load error:', err.message);
+    }
+  }
 
   // ── Load Stats ────────────────────────────────────────────────────────────
   async function loadStats() {
@@ -154,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align:center; color: var(--error); padding: 2rem;">
+          <td colspan="9" style="text-align:center; color: var(--error); padding: 2rem;">
             Error loading users: ${escHtml(err.message)}
           </td>
         </tr>`;
@@ -180,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!users || users.length === 0) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align:center; color: var(--text-muted); padding: 3rem;">
+          <td colspan="9" style="text-align:center; color: var(--text-muted); padding: 3rem;">
             No users found.
           </td>
         </tr>`;
@@ -219,6 +226,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultBadge = `<span class="badge ${cls}">${r.replace('_', ' ').toUpperCase()}</span>`;
       }
 
+      // ── Assigned bots toggles ──
+      // A null/undefined selected_bots (legacy row) defaults to the first bot,
+      // mirroring the backend's DEFAULT_BOTS fallback. An explicit array is used
+      // as-is (an empty array = no bots assigned).
+      const selectedBots = Array.isArray(user.selected_bots)
+        ? user.selected_bots
+        : (allBots[0] ? [allBots[0].key] : []);
+
+      let botsCellHtml;
+      if (allBots.length === 0) {
+        botsCellHtml = '<span style="color:var(--text-muted); font-size:0.8rem;">—</span>';
+      } else {
+        botsCellHtml = `<div class="bot-toggle-group" style="display:flex; flex-wrap:wrap; gap:0.3rem;">` +
+          allBots.map((b) => {
+            const on = selectedBots.includes(b.key);
+            return `<button type="button" class="badge bot-toggle ${on ? 'badge-success' : 'badge-info'}"
+              data-bot="${escHtml(b.key)}" data-on="${on ? '1' : '0'}"
+              style="cursor:pointer; ${on ? '' : 'opacity:0.5;'}"
+              title="Click to ${on ? 'remove' : 'assign'} ${escHtml(b.name)}">${escHtml(b.name)}</button>`;
+          }).join('') +
+          `</div>`;
+      }
+
       row.innerHTML = `
         <td>
           <div style="font-weight: 600; font-size: 0.9rem;">${escHtml(user.discord_username || 'Unknown')}</div>
@@ -239,6 +269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </td>
         <td>${resultBadge}</td>
         <td>${approvedUntilHtml}</td>
+        <td>${botsCellHtml}</td>
         <td style="text-align: right;">
           <div class="action-btn-group">
             <button class="btn btn-xs btn-primary approve-btn" data-id="${user.id}" data-name="${escHtml(user.discord_username || 'User')}" title="Approve for 30 days from now">
@@ -308,6 +339,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
 
+      // ── Bot assignment toggles ──
+      row.querySelectorAll('.bot-toggle').forEach((chip) => {
+        chip.addEventListener('click', async () => {
+          // Build the new selection from the current on/off state of every chip
+          const chips = [...row.querySelectorAll('.bot-toggle')];
+          const willBeOn = chip.dataset.on !== '1';
+          const nextBots = chips
+            .filter((c) => (c === chip ? willBeOn : c.dataset.on === '1'))
+            .map((c) => c.dataset.bot);
+
+          // Optimistic UI update
+          chip.dataset.on = willBeOn ? '1' : '0';
+          chip.className = `badge bot-toggle ${willBeOn ? 'badge-success' : 'badge-info'}`;
+          chip.style.opacity = willBeOn ? '' : '0.5';
+          chips.forEach((c) => { c.style.pointerEvents = 'none'; });
+
+          try {
+            const res = await fetch(`/api/admin/users/${user.id}/bots`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ bots: nextBots })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || 'Failed to update bots');
+
+            // Keep local cache in sync so a background refresh doesn't flicker
+            user.selected_bots = data.selected_bots;
+            showToast(`Bots for "${user.discord_username || 'user'}": ${data.selected_bots.length ? data.selected_bots.join(', ') : 'none'}`, 'success');
+          } catch (err) {
+            // Revert on failure
+            const revertOn = !willBeOn;
+            chip.dataset.on = revertOn ? '1' : '0';
+            chip.className = `badge bot-toggle ${revertOn ? 'badge-success' : 'badge-info'}`;
+            chip.style.opacity = revertOn ? '' : '0.5';
+            showToast(err.message, 'error');
+          } finally {
+            chips.forEach((c) => { c.style.pointerEvents = ''; });
+          }
+        });
+      });
+
       tableBody.appendChild(row);
     });
   }
@@ -329,4 +404,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     el.textContent = String(str);
     return el.innerHTML;
   }
+
+  // ── Initial Data Load ─────────────────────────────────────────────────────
+  // Runs after all state + function declarations above are in scope.
+  // Load the bot registry first so the users table can render assignment chips.
+  await loadBots();
+  await Promise.all([loadStats(), loadUsers()]);
+
+  // Auto-refresh stats + users every 30 seconds (bot registry is static)
+  setInterval(async () => {
+    await Promise.all([loadStats(), loadUsers()]);
+  }, 30000);
 });

@@ -1,7 +1,10 @@
 import crypto from 'crypto';
+import { getBot } from '../config/bots.js';
 
 const GRAPHQL_URL = 'https://api.top.gg/graphql';
-const ENTITY_ID = '4283790394010009600'; // Karuta's Top.gg entity ID
+
+// Default bot used when a caller doesn't pass one (keeps single-bot callers working).
+const DEFAULT_BOT = getBot('karuta');
 
 function getHeaders(sessionToken) {
   return {
@@ -17,15 +20,16 @@ function getHeaders(sessionToken) {
 /**
  * Check the vote status of a user
  * @param {string} sessionToken - Decrypted top.gg session token
+ * @param {object} [bot] - Bot config from the registry (defaults to Karuta)
  * @returns {Promise<object>} { status: 'VOTED' | 'NOT_VOTED' | 'ERROR', timeUntilNextVote: number, error?: string }
  */
-export async function checkVoteStatus(sessionToken) {
+export async function checkVoteStatus(sessionToken, bot = DEFAULT_BOT) {
   try {
     const payload = {
       query: "query gvs($i: String!) { entity(id: $i) { id voteStatus { timeUntilNextVote status id isSubscribed } } }",
       operationName: "gvs",
       variables: {
-        i: ENTITY_ID
+        i: bot.entityId
       }
     };
 
@@ -67,9 +71,10 @@ export async function checkVoteStatus(sessionToken) {
 /**
  * Cast a vote on behalf of a user
  * @param {string} sessionToken - Decrypted top.gg session token
+ * @param {object} [bot] - Bot config from the registry (defaults to Karuta)
  * @returns {Promise<object>} { status: 'success' | 'already_voted' | 'captcha' | 'error', newVoteCount?: number, detail: string }
  */
-export async function castVote(sessionToken) {
+export async function castVote(sessionToken, bot = DEFAULT_BOT) {
   try {
     const traceId = crypto.randomUUID();
     const encodedData = Buffer.from(JSON.stringify({ traceId })).toString('base64');
@@ -78,7 +83,7 @@ export async function castVote(sessionToken) {
       query: "mutation VoteEntity($entityId: String!, $encodedData: String!, $query: String!) { voteEntity(entityId: $entityId, encodedData: $encodedData, query: $query) { isAcknowledged newVoteCount canRetry error captchaProvider } }",
       operationName: "VoteEntity",
       variables: {
-        entityId: ENTITY_ID,
+        entityId: bot.entityId,
         encodedData: encodedData,
         query: ""
       }
@@ -143,9 +148,10 @@ export async function castVote(sessionToken) {
  * Cast a vote on behalf of a user using browser automation (Playwright)
  * Translated from the user's robust Python implementation.
  * @param {string} sessionToken - Decrypted top.gg session token
+ * @param {object} [bot] - Bot config from the registry (defaults to Karuta)
  * @returns {Promise<object>} { status: 'success' | 'already_voted' | 'captcha' | 'error', detail: string }
  */
-export async function castVotePlaywright(sessionToken) {
+export async function castVotePlaywright(sessionToken, bot = DEFAULT_BOT) {
   let browser = null;
   try {
     // Dynamically import playwright-chromium (optional dependency)
@@ -204,9 +210,10 @@ export async function castVotePlaywright(sessionToken) {
       }
     });
 
-    console.log('[VOTER-PLAYWRIGHT] Loading https://top.gg/bot/646937666251915264/vote ...');
+    const voteUrl = `https://top.gg/bot/${bot.botId}/vote`;
+    console.log(`[VOTER-PLAYWRIGHT] Loading ${voteUrl} ...`);
     try {
-      await page.goto('https://top.gg/bot/646937666251915264/vote', {
+      await page.goto(voteUrl, {
         timeout: 40000,
         waitUntil: 'networkidle'
       });
@@ -352,7 +359,7 @@ export async function castVotePlaywright(sessionToken) {
       }
 
       if (ack) {
-        console.log(`[VOTER-PLAYWRIGHT] Success! Total Karuta votes: ${newCount}`);
+        console.log(`[VOTER-PLAYWRIGHT] Success! Total ${bot.name} votes: ${newCount}`);
         return {
           status: 'success',
           newVoteCount: newCount,

@@ -2,6 +2,7 @@ import express from 'express';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import { supabaseAdmin } from '../config/supabase.js';
 import { executeVoteCron } from './cron.js';
+import { listBots, BOT_KEYS } from '../config/bots.js';
 
 const router = express.Router();
 
@@ -57,14 +58,24 @@ router.get('/stats', async (req, res) => {
 });
 
 /**
+ * GET /api/admin/bots
+ * Returns the registry of bots this service can vote for (for admin assignment UI)
+ */
+router.get('/bots', (req, res) => {
+  res.json({
+    bots: listBots().map(({ key, name }) => ({ key, name }))
+  });
+});
+
+/**
  * GET /api/admin/users
- * Returns list of all registered users (includes approved_until)
+ * Returns list of all registered users (includes approved_until + selected_bots)
  */
 router.get('/users', async (req, res) => {
   try {
     const { data: users, error } = await supabaseAdmin
       .from('users')
-      .select('id, discord_username, email, subscription_status, encrypted_token, last_vote_at, last_vote_result, approved_until, created_at')
+      .select('id, discord_username, email, subscription_status, encrypted_token, last_vote_at, last_vote_result, approved_until, selected_bots, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -131,6 +142,44 @@ router.post('/users/:id/disable', async (req, res) => {
   } catch (err) {
     console.error('[ADMIN] Disable user error:', err.message);
     res.status(500).json({ error: 'Failed to disable user.' });
+  }
+});
+
+/**
+ * POST /api/admin/users/:id/bots
+ * Sets which bots a user is assigned to vote for.
+ * Body: { bots: string[] }  — array of bot keys from the registry.
+ */
+router.post('/users/:id/bots', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { bots } = req.body;
+
+    if (!Array.isArray(bots)) {
+      return res.status(400).json({ error: 'Request body must include a "bots" array of bot keys.' });
+    }
+
+    // Keep only valid, known bot keys (deduped) to avoid storing stale/garbage keys
+    const cleaned = [...new Set(bots)].filter((key) => BOT_KEYS.includes(key));
+
+    const { error } = await supabaseAdmin
+      .from('users')
+      .update({
+        selected_bots: cleaned,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: `Assigned ${cleaned.length} bot(s).`,
+      selected_bots: cleaned
+    });
+  } catch (err) {
+    console.error('[ADMIN] Set user bots error:', err.message);
+    res.status(500).json({ error: 'Failed to update assigned bots.' });
   }
 });
 

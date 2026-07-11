@@ -22,6 +22,7 @@ CREATE TABLE public.users (
   customer_id TEXT UNIQUE,
   subscription_id TEXT UNIQUE,
   subscription_status TEXT NOT NULL DEFAULT 'inactive',
+  selected_bots TEXT[] NOT NULL DEFAULT '{karuta}',
   last_vote_at TIMESTAMPTZ,
   last_vote_result TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -32,6 +33,7 @@ CREATE TABLE public.users (
 CREATE TABLE public.vote_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  bot_key TEXT,
   status TEXT NOT NULL,
   detail TEXT,
   voted_at TIMESTAMPTZ DEFAULT NOW()
@@ -72,6 +74,15 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 ```
 
 4. Click **Run** to execute the query.
+
+> **Already have an older database?** If your `users` / `vote_logs` tables were created before multi-bot support, run this migration once to add the new columns:
+> ```sql
+> ALTER TABLE public.users
+>   ADD COLUMN IF NOT EXISTS selected_bots TEXT[] NOT NULL DEFAULT '{karuta}';
+> ALTER TABLE public.vote_logs
+>   ADD COLUMN IF NOT EXISTS bot_key TEXT;
+> ```
+
 5. In Supabase Dashboard &rarr; **Settings** &rarr; **API**, copy these values:
    - **Project URL** (`SUPABASE_URL`)
    - **Project API Keys - `anon` `public`** (`SUPABASE_ANON_KEY`)
@@ -194,3 +205,25 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             https://<your-vercel-domain>.vercel.app/api/cron/vote
 ```
+
+---
+
+## 8. Adding More Bots (Karuta, Sofi, …)
+
+The stored token is a **Top.gg session cookie** tied to the user's Top.gg account — not to any single bot — so one token can vote for any number of bots. Adding a new bot is a one-file change:
+
+1. Open **`backend/src/config/bots.js`** and add an entry to the `BOTS` object:
+   ```js
+   sofi: {
+     key: 'sofi',              // short slug, stored in the DB + admin UI
+     name: 'Sofi',             // display name
+     entityId: '...',          // Top.gg GraphQL entity id (see below)
+     botId: '853629533855809596', // number in the top.gg/bot/<botId>/vote URL
+   },
+   ```
+   - `botId` is the number in the bot's vote URL: `https://top.gg/bot/<botId>/vote`.
+   - `entityId` is Top.gg's internal GraphQL id. To find it: open the vote page, open DevTools → **Network**, click **Vote**, and inspect the `api.top.gg/graphql` request payload — the `entityId` / `i` variable is the value you need. (It is **not** the same as the `botId`.)
+2. Redeploy. The new bot immediately appears in the **Admin Panel → User Management → Bots** column.
+3. For each user, click the bot chips to assign which bots they should be voted for. Green = assigned. Assigning multiple bots casts a vote for each of them on every cron run.
+
+New/legacy users default to **Karuta** until you change their assignment. Removing a bot from `bots.js` is safe — stale keys stored on users are ignored automatically.
