@@ -2,7 +2,7 @@ name: Trigger Vote Cron
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Triggers every 6 hours
+    - cron: '0 */3 * * *' # Triggers every 3 hours
   workflow_dispatch: {} # Allows manual trigger from the GitHub Actions tab or Admin Panel
 
 jobs:
