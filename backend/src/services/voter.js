@@ -13,6 +13,7 @@ function getHeaders(sessionToken) {
     'origin': 'https://top.gg',
     'referer': 'https://top.gg/',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'authorization': `Bearer ${sessionToken}`,
     'cookie': `__Secure-authjs.session-token=${sessionToken}`
   };
 }
@@ -56,9 +57,16 @@ export async function checkVoteStatus(sessionToken, bot = DEFAULT_BOT) {
       throw new Error('Vote status details missing in GraphQL response');
     }
 
+    const isVoted = voteStatus.status === 'ON_COOLDOWN';
+    let secondsRemaining = 0;
+    if (voteStatus.timeUntilNextVote) {
+      const cooldownTime = new Date(voteStatus.timeUntilNextVote).getTime();
+      secondsRemaining = Math.max(0, Math.round((cooldownTime - Date.now()) / 1000));
+    }
+
     return {
-      status: voteStatus.status, // "VOTED" or "NOT_VOTED"
-      timeUntilNextVote: voteStatus.timeUntilNextVote || 0
+      status: isVoted ? 'VOTED' : 'NOT_VOTED',
+      timeUntilNextVote: secondsRemaining
     };
   } catch (err) {
     return {
@@ -237,7 +245,8 @@ export async function castVotePlaywright(sessionToken, bot = DEFAULT_BOT) {
       "button:has-text('Vote')",
       "[data-testid='vote-button']",
       "button:has-text('vote')",
-      "a:has-text('Vote')"
+      "a:text-is('Vote')",
+      "a:text-is('vote')"
     ];
 
     let voteBtn = null;
@@ -250,7 +259,11 @@ export async function castVotePlaywright(sessionToken, bot = DEFAULT_BOT) {
       const currentTextLower = currentText.toLowerCase();
 
       // 1. Check if session expired / not logged in
-      if (currentTextLower.includes('login to vote') || currentTextLower.includes('sign in to vote')) {
+      if (
+        currentTextLower.includes('login to vote') || 
+        currentTextLower.includes('sign in to vote') ||
+        currentTextLower.includes('must be logged in to vote')
+      ) {
         console.error('[VOTER-PLAYWRIGHT] Not logged in — Top.gg rejected session cookie.');
         return {
           status: 'error',
